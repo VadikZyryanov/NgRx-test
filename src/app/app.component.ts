@@ -1,4 +1,8 @@
 import { Component } from '@angular/core';
+import { Store } from "@ngrx/store";
+import {clear, countSelector, decrease, increase, updatedAtSelector} from "./reducers/counter";
+import {Observable} from "rxjs";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-root',
@@ -6,25 +10,25 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  public counter: number = 0;
-  public updateAt?: number;
+  public count$: Observable<number> = this.store.select(countSelector);
+  public updatedAt$: Observable<number | undefined> = this.store.select(updatedAtSelector);
+  public cannotDecrease$: Observable<boolean>;
 
-  public get checkDisabled(): boolean {
-    return this.counter <= 0;
+  constructor(private store: Store) {
+    this.cannotDecrease$ = this.count$.pipe(
+      map(count => count <= 0)
+    )
   }
 
   public increase(): void {
-    this.updateAt = Date.now();
-    this.counter++;
+    this.store.dispatch(increase());
   }
 
   public decrease(): void {
-    this.updateAt = Date.now();
-    this.counter--;
+    this.store.dispatch(decrease());
   }
 
   public clear(): void {
-    this.updateAt = Date.now();
-    this.counter = 0;
+    this.store.dispatch(clear());
   }
 }
